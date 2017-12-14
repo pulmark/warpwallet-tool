@@ -1,0 +1,48 @@
+{
+  "_time": "2017-12-13T18:29:44EET",
+  "_user": {
+    "command": "generate-wallet-deterministic-simple",
+    "network": 1,
+    "password": "password",
+    "salt": "let@me.in",
+    "wallet": {
+      "_type": "deterministic-simple",
+      "keyCount": 5,
+      "keyRoot": "f1b7a2986c39938afba08d7f93d2f8f9a3aaf4bf51722e3074e369f2dd78ac2f",
+      "magic": 261261,
+      "watchOnly": true
+    }
+  },
+  "keys": [
+    {
+      "key": {
+        "address": "14rYuctUeiRiYjuLSTML671FJG1VPdfN54",
+        "publicKeyHex": "049F6703E1FD432149EC9F9C5A955A345C1E7A5911978C314A29DFF3A525C6F3B339345FC2D1887B47077CF149A7F792542359D9C3BF9D6B3C429D4E875E293156"
+      }
+    },
+    {
+      "key": {
+        "address": "1JhGq8oK6uCqTfhTcFaGFSKcNJDFXqB8Gh",
+        "publicKeyHex": "04AD5C57DA433830BCAE44BD9B81B4FE5D17AD268E812CE28BF0BF58600AA050B13E8E3B4ED322D715F32D2ABED99CDDEE51EBDA9591298BA64581DC74CC64E57E"
+      }
+    },
+    {
+      "key": {
+        "address": "1BB5aj39DBnqckLob5F4W8U1h172yJp4o8",
+        "publicKeyHex": "04A59090A4B85F331F1CFDD5E74E3FB828D3A1529E65C157DB9BFD6B4A22DD88AE20CD762683CD8E6D17BB846A9A419EC9C33156B97CBE747FBEF1DA7A77FFB6BC"
+      }
+    },
+    {
+      "key": {
+        "address": "195mLz3LGVhyPTbg67K4rctfMo7bXD7wzi",
+        "publicKeyHex": "0442F606C6DBF00D09B7DFFF4421ED3EA72E437B3696B7F2753FF3824FA9406471C96865F65922A1991A0B3DBE14C9F0B4F039D3945DC2FBE64D81FF8FC471797E"
+      }
+    },
+    {
+      "key": {
+        "address": "1FJtERmyrEFqfNWJ7X6R9kP3fMaNjEgdTq",
+        "publicKeyHex": "04E80E82F7CE4CCD424BFE2025FB91837D4A286C853089B12EABA00BED2B667F9DA9D4DD77B55F65FBC80A4F290FE60846296BA5233A41F37B3FCF933B80D545B9"
+      }
+    }
+  ]
+}

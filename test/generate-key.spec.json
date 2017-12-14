@@ -1,0 +1,15 @@
+Running default command <generate-key>
+{
+  "_time": "2017-12-13T18:24:48EET",
+  "_user": {
+    "command": "generate-key",
+    "network": 1,
+    "password": "Make WARP Great Again",
+    "salt": "let@me.in"
+  },
+  "key": {
+    "address": "1DaHNAn12MfcjhzzGRf1sMbaaZ7R298U26",
+    "privateKeyWif": "5KSpwMUK2Qpz657DytYWy7cAZnEEXWUMvJRmX5FicAPzzuCDNmo",
+    "publicKeyHex": "047B263A6315AB870D9E043DC2814B64CE16FED91691DDA980CAA28501C6E9FD262D12F965ACAED6BDCE9298ECB28667180FFB535610B7D283AA0E58A29E6AA149"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "_time": "2017-12-13T18:33:18EET",
+  "_user": {
+    "command": "generate-key-random",
+    "network": 1,
+    "salt": "let@me.in"
+  },
+  "keys": [
+    {
+      "_password": "AkCkES06nIZU",
+      "key": {
+        "address": "14oFePpRkqqC4reoCaE7dBPUX4DtvjEa9X",
+        "privateKeyWif": "5Juy9VsGVuRTh4kbmyR6k5sqXNKbnLCDAR2K1XkXZDNmtQFVtkj",
+        "publicKeyHex": "0404C9FA6CAD0980CD6738FCCF7F938490CA5FD7880569B4D4131F72F4972CD01B9DF8B6F77D0848D87EA7D2755E2B67B3CC391880E12D6C24969A383769342F0B"
+      }
+    },
+    {
+      "_password": "qWrK2zyrQgt7",
+      "key": {
+        "address": "1Ab4STdcdkSH2u3jhD9moMWhELmfpjkSnW",
+        "privateKeyWif": "5KL51GgKtkBgUbi3jpGhGWbhUx5YgJ2skc4cS7PiZdPnjhsbr9M",
+        "publicKeyHex": "047046160BDD94510CC98B9256BF722497DB2F8F95A2B6BBE9CFD51DB8E4CCB39FBD2D5F5976DA2D6B9F9050D5912B639B0E42E47ABA5592A802882FA5456046E5"
+      }
+    }
+  ]
+}
