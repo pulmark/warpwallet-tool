@@ -10,68 +10,6 @@
 
 
 <meta charset="UTF-8">
-<style type="text/css">
-table, th, td {
-   border-width: 1px;
-   border-style: solid;
-   border-collapse: collapse;
-   text-align:center;
-   padding: 1px 5px 1px 5px;
-}
-th {
-   background-color: lightyellow;
-}
-th.thh {
-   background-color: lightcyan;
-}
-th.ths, th.thsa {
-   border-top-width: 2px;
-   font-style: italic;
-/*   background-color: #FFF8DC; */
-   font-weight: bold;
-/*#FCDFFF;*/
-}
-th.thsa {
-   border-left-width: 2px;
-   border-right-width: 2px;
-   background-color: lightyellow;
-}
-th.arch {
-   border-top-width: 2px;
-   font-style: italic;
-   font-weight: normal;
-}
-th.direction {
-   font-weight: normal;
-}
-td.best {
-/*   background-color: #D8FBD8; */
-}
-td.algorithm {
-   border-left-width: 2px;
-   border-right-width: 2px;
-   background-color: lightyellow;
-}
-.left {
-   border-left-width: 2px;
-}
-.top {
-   border-top-width: 2px;
-}
-.bottom {
-   border-bottom-width: 2px;
-}
-.right {
-   border-right-width: 2px;
-}
-td.descr {
-/*   text-align: left; */
-}
-span.toc {
-   margin-right: 20px;
-   white-space: nowrap;
-}
-</style>
 </head>
 <body>
 <h1>cppcrypto library</h1>
