@@ -243,6 +243,7 @@ bool UserInterface::parse(int argc, char** argv) {
         try {
           UserInterface::Attach temp;
           temp.pwd_len_ = std::stoi(params.at(0));
+          pwd_.clear();
           salt_.resize(params.at(1).size());
           std::copy(params.at(1).begin(), params.at(1).end(), salt_.begin());
           temp.address_.resize(params.at(2).size());

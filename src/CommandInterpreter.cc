@@ -131,7 +131,6 @@ void CommandInterpreter::doAttach() {
   auto start = std::chrono::system_clock::now();
   // loop until coin address of challenge found
   do {
-    // pwd = {'F', '1'};
     pwd_gen.generatePassword(pwd, pwd.size());
     key_gen.generate(pwd, ui_.salt_, secret);
     coin.create(secret.data(), secret.size());
@@ -142,15 +141,10 @@ void CommandInterpreter::doAttach() {
   auto elapsed = stop - start;
   auto msec = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed);
   auto combination(pow(62, pwd.size()));
-  /// \todo rethink how-to display attach results
   if (isFound) {
-    /// \todo password should be displayed differently (user did't enter it)
-    ui_.pwd_ = pwd;
     initJSON();
-    addJSON(ui_);
+    addJSON(ui_, ui_.attach_.value(), pwd);
     addJSON("performance", combination, cnt, msec.count());
-    /// \todo display challenge and matching found differently
-    addJSON(challenge);
     addJSON(coin);
     flushJSON();
   }
@@ -270,6 +264,23 @@ void CommandInterpreter::addJSON(const UserInterface::WalletHD& wallet) {
   out_["_user"]["wallet"]["watchOnly"] = wallet.is_watch_only_;
 }
 
+void CommandInterpreter::addJSON(const UserInterface& ui,
+                                 const UserInterface::Attach& attach,
+                                 const ByteVect& pwd) {
+  out_["_user"]["command"] = ui.oper_;
+  out_["_user"]["network"] = ui.cid_;
+  if (ui.salt_.size() > 0) {
+    out_["_user"]["param"]["salt"] = ByteVect2String(ui.salt_);
+  }
+  out_["_user"]["param"]["passwordLenght"] = attach.pwd_len_;
+  out_["_user"]["param"]["address"] = ByteVect2String(attach.address_);
+  out_["attach"]["result"]["success"] = false;
+  if (pwd.size() > 0) {
+    out_["attach"]["result"]["success"] = true;
+    out_["attach"]["result"]["password"] = ByteVect2String(pwd);
+  }
+}
+
 void CommandInterpreter::addJSON(const CoinKeyPair& coin) {
   out_["key"]["address"] = ByteVect2String(coin.address());
   std::string s = ByteVect2String(coin.publicKey());
@@ -318,12 +329,12 @@ void CommandInterpreter::addJSON(const std::string& name, uint64_t combination,
                                  uint64_t cnt, uint64_t ms) {
   json stat;
   double sec(ms / 1000);
-  stat[name]["combination"] = combination;
+  stat["combination"] = combination;
   if (combination != 0)
-    stat[name]["coverageProcents"] = double(cnt / double(combination)) * 100.0;
-  stat[name]["timeSec"] = sec;
-  if (ms != 0) stat[name]["rateTrialPerSec"] = double(cnt / sec);
-  stat[name]["trial"] = cnt;
+    stat["coverage"] = double(cnt / double(combination)) * 100.0;
+  stat["time"] = sec;
+  if (ms != 0) stat["rate"] = double(cnt / sec);
+  stat["trial"] = cnt;
 
-  out_["attach"] = stat;
+  out_["attach"][name] = stat;
 }

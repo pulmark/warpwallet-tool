@@ -24,12 +24,12 @@
 #include <iostream>
 #include <iterator>
 
-extern "C" {
-#include "fastpbkdf2.h"
 #include "scrypt.h"
-}
+#include "sha256.h"
 
 #include "WarpKeyGenerator.h"
+
+using namespace cppcrypto;
 
 /* Warp crypto key generation algorithm
  * ***************************************************************************
@@ -57,8 +57,9 @@ int WarpKeyGenerator::generate(const ByteVect& pwd, const ByteVect& salt,
     a.push_back('\01');
     std::vector<uint8_t> b(salt);
     b.push_back('\01');
-    scrypt(a.data(), a.size(), b.data(), b.size(), (1 << 18), 8, 1, s1,
-           sizeof(s1));
+
+    hmac h(sha256(), a.data(), a.size());
+    scrypt(h, b.data(), b.size(), (1 << 18), 8, 1, s1, sizeof(s1));
   }
   {
     // do pbkdf2
@@ -66,8 +67,9 @@ int WarpKeyGenerator::generate(const ByteVect& pwd, const ByteVect& salt,
     a.push_back('\02');
     std::vector<uint8_t> b(salt);
     b.push_back('\02');
-    fastpbkdf2_hmac_sha256(a.data(), a.size(), b.data(), b.size(), (1 << 16),
-                           s2, sizeof(s2));
+
+    hmac h(sha256(), a.data(), a.size());
+    pbkdf2(h, b.data(), b.size(), (1 << 16), s2, sizeof(s2));
   }
 
   // do XOR using s1 and s2 and save results to out buf

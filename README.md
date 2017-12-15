@@ -131,43 +131,50 @@ Generates [BIP32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
 * Command params : **-n {network id} - c 5 - p {passphrase} {salt} {ext keys count} {int keys count} {watch only}**
 * Status: work in progress
 
-## Platforms
-The development and testing has been done on laptop running Linux x86_64. No other desktop platforms has 
-been tested. The source code is generic so it should be easy to build binaries for other platforms as well.
+## Portability
 
-The source code is implemented so that core logic and user interface is separated to allow integration of core functionality into 
-other type of user interfaces.
+The external [cppcrypto](https://sourceforge.net/projects/cppcrypto/files) library supports only x86 processors(32-bit or 64-bit).
+The development and testing has been done on laptop running Linux x86_64. No other desktop platforms has been tested.
+
+The distribution source code is generic so it should be easy to build binaries for other platforms as well.
+The source code is implemented so that core logic and user interface is separated to allow integration of 
+core functionality into other type of user interfaces.
 
 ## Dependencies
 The source code uses standard C++ libraries. The compiler must support C++14 standard or never.
-The external libraries depends on OpenSSL development libraries and headers. OpenSSL version supported is 1.1.0g.      
+The external libbitcoin-tool library depends on OpenSSL development libraries and headers. OpenSSL version supported is 1.1.0g.      
 
 The package depends on the following externals:
 
-### Headers
+### Header-only Libraries
 * [json.hpp](https://github.com/nlohmann/json) - json formatted output, [MIT](https://github.com/nlohmann/json/blob/master/LICENSE.MIT)
 * [CLI](https://github.com/CLIUtils/CLI11) - command-line parsing, [BSD-3](https://github.com/CLIUtils/CLI11/blob/master/LICENSE)
 
 ### Static Libraries
-* [scrypt](https://github.com/jkalbhenn/scrypt) - SCrypt algorithm, [LGPL3+](https://github.com/jkalbhenn/scrypt/blob/master/license.text)
-* [fastpbkdf2](https://github.com/ctz/fastpbkdf2) - fast PBKDF2 algorithm, [CCO](https://github.com/ctz/fastpbkdf2/blob/master/LICENSE) 
+* [cppcrypto](https://sourceforge.net/projects/cppcrypto/files) - small, fast, cross-platform BSD licensed C++ crypto library  
 * [libbitcoin-tool](https://github.com/pulmark/bitcoin-tool) - generates cryptocurrency addresses and keys, [MIT](https://github.com/pulmark/bitcoin-tool/blob/master/lib/LICENSE.md)
-
-The libbitcoin-tool is derived from bitcoin-tool command line tool. A simple wrapper has been done to build 
-package as library to be used with other apps. View it's [repository](https://github.com/pulmark/bitcoin-tool/tree/master/lib) for more details. 
 
 The distribution doesn't use any QT libraries or headers, only the build tool QT Creator.
 
 ## Build
 The build is done by using QT Creator Community Edition, version 5.9.2. 
 The project file can be found at the project root: [warp-util.pro](https://github.com/pulmark/warpwallet-tool/blob/master/warp-util.pro). 
+
 The external headers (JSON, CLI) are already copied into include sub-directory. 
 
-Fetching the sources for external libraries from repositories and build them for distribution is not yet supported. 
-View QT Creator project file for more details of library path names where they should be fetched and build 
-(externals sub-directory).
+Fetching the sources for external libraries from repositories and build them for distribution is not yet supported.
+This must be done separately.
 
-To build library libbitcoin-tool use the QT project file included in it's [repository](https://github.com/pulmark/bitcoin-tool/tree/master/lib).
+### Build cppcrypto library
+
+* View [instructions](https://github.com/pulmark/warpwallet-tool/blob/master/externals/crypto/cppcrypto/doc/readme.html) for details where to get it and how-to build. 
+* The path into target library location is ./externals/crypto/cppcrypto.
+
+### Build libbitcoin-tool library
+
+* Clone [project](https://github.com/pulmark/bitcoin-tool) into .externals/bitcoin-tool/ directory. 
+* The library is derived from bitcoin-tool command line tool by adding a simple wrapper to use it as library. 
+* For building use QT project file included in it's lib sub-directory.
 
 Currently distribution contains only one executable. Later the purpose is to build separate packages for core 
 functionality and user interface. Some tests has been done by using Google's Bazel for build. Bazel might 

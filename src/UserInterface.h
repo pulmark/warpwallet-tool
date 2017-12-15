@@ -27,8 +27,8 @@
 #include "CoinKeyPair.h"
 #include "RandomSeedGenerator.h"
 
-/// crack-address -p <password length> <salt> <address>
-const std::string OPER_ATTACH("crack-address");
+/// attach-address -p <password length> <salt> <address>
+const std::string OPER_ATTACH("attach-address");
 
 /// generate-key -p <password> <salt>
 const std::string OPER_GENERATE_COIN("generate-key");

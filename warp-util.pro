@@ -1,15 +1,16 @@
 QT -= gui core
 
+TARGET = warptool
+
 CONFIG += c++14 console
 CONFIG -= app_bundle
 
-INCLUDEPATH += $$PWD/externals/fastpbkdf2 \
-    $$PWD/externals/scrypt/source \
+INCLUDEPATH += \
+    $$PWD/include \
+    $$PWD/externals/crypto/cppcrypto \
     $$PWD/externals/bitcoin-tool/lib \
-    $$PWD/include
 
-DEPENDPATH += $$PWD/externals/fastpbkdf2 \
-    $$PWD/externals/scrypt/source \
+DEPENDPATH += \
     $$PWD/externals/bitcoin-tool/lib
 
 # The following define makes your compiler emit warnings if you use
@@ -43,6 +44,9 @@ DISTFILES += \
     pwcrack.pro.user
 
 unix:!macx: LIBS += -lcrypto -lssl
-unix:!macx: LIBS += -L$$PWD/externals/fastpbkdf2 -lfastpbkdf2 \
-     -L$$PWD/externals/scrypt/temp -lscrypt \
+#unix:!macx: LIBS += -L$$PWD/externals/fastpbkdf2 -lfastpbkdf2 \
+#     -L$$PWD/externals/scrypt/temp -lscrypt \
+#     -L$$PWD/externals/bitcoin-tool/lib/ -lbitcointool
+
+unix:!macx: LIBS += -L$$PWD/externals/crypto/cppcrypto/ -lcppcrypto \
      -L$$PWD/externals/bitcoin-tool/lib/ -lbitcointool

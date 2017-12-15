@@ -70,6 +70,8 @@ class CommandInterpreter {
   void addJSON(const UserInterface& ui);
   void addJSON(const UserInterface::WalletDTS& wallet);
   void addJSON(const UserInterface::WalletHD& wallet);
+  void addJSON(const UserInterface& ui, const UserInterface::Attach& attach,
+               const ByteVect& pwd);
   void addJSON(const CoinKeyPair& coin);
   void addJSON(const KeyVect& coins,
                const OptionsOutput& options = OptionsOutput(0xff));
