@@ -36,6 +36,16 @@ class WarpKeyGenerator {
   void init();
 
   int generate(const ByteVect& pwd, const ByteVect& salt, SecretKey& out);
+
+ private:
+#ifdef USE_OPENSSL
+  int openssl_pbkdf2(const unsigned char* pass, int passlen,
+                     const unsigned char* salt, int saltlen, int iter,
+                     unsigned char* out, int keylen);
+  int openssl_scrypt(const unsigned char* pass, int passlen,
+                     const unsigned char* salt, int saltlen, int N, int r,
+                     int p, unsigned char* out, int keylen);
+#endif
 };
 
 #endif  // WARPKEYGENERATOR_H

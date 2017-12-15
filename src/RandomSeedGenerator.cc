@@ -18,12 +18,13 @@
 ** along with this software.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "RandomSeedGenerator.h"
-
 #include <algorithm>
 #include <array>
 #include <cstring>
 #include <map>
+
+#include "RandomSeedGenerator.h"
+#include "randutils.hpp"
 
 namespace {
 /// \brief PASSWD_CHARS - all allowed password characters: digits + alpabets
@@ -51,13 +52,16 @@ RandomSeedGenerator::RandomSeedGenerator(SeedDictionary dict)
     : chars_(SeedChar::kUndef), dict_(dict) {}
 
 void RandomSeedGenerator::init() {
-  // generate long enough init seed sequence so that no special warm-up time
-  // is required for the M-T algorithm engine.
-  std::array<int, 624> seed_data;
-  std::random_device r;
-  std::generate_n(seed_data.data(), seed_data.size(), std::ref(r));
-  std::seed_seq seq(std::begin(seed_data), std::end(seed_data));
-  engine_ = std::make_unique<std::mt19937>(seq);
+  /*
+    // generate long enough init seed sequence so that no special warm-up time
+    // is required for the M-T algorithm engine.
+    std::array<int, 624> seed_data;
+    std::random_device r;
+    std::generate_n(seed_data.data(), seed_data.size(), std::ref(r));
+    std::seed_seq seq(std::begin(seed_data), std::end(seed_data));
+  */
+  // use randutils advanced seed generator for initialization
+  engine_ = std::make_unique<std::mt19937>(randutils::auto_seed_256{}.base());
 
   if (dict_ != SeedDictionary::kUndef) {
     /// \todo read allowed words from file

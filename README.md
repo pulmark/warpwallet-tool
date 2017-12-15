@@ -2,14 +2,15 @@
 A command-line tool to generate cryptocurrency addresses, keys and wallets by using WarpWallet algorithm.
 More information about the algorithm can be found at [Keybase](https://keybase.io/warp).
 
-The private key generation has been done as described by the algorithm. At the moment tool support generation of addresses 
+The private key generation is done as described by the algorithm. At the moment tool support generation of addresses 
 and keys for following cryptocurrency networks:
 
 * bitcoin, bitcoin-test
 * litecoin, litecoin-test
 
 ## Disclaimer
-Use with care. Check that generated addresses & private keys are valid before using them. 
+
+The code is experimental so use tool with care. Check that generated addresses & private keys are valid before using them.
 
 Never use system that is connected to network for address & private key generation or to store private keys. Sign transactions in isolated, [air-gapped](https://www.techopedia.com/definition/17037/air-gap) system before sending transaction into network.
 
@@ -75,7 +76,7 @@ Mersenne-Twister engine (PRNG) is used for random passphrase generation.
 ```
 
 ### 3. Attach
-Tries to find private key and passphrase for given coin address.
+Tries to find private key and passphrase for coin address.
 
 * Command params: **-n {network id} -c 3 -p {passphrase length} {salt} {coin address}**
 * Example Output:
@@ -183,7 +184,7 @@ The distribution depends on the following externals:
 * [CLI](https://github.com/CLIUtils/CLI11) - command-line parsing, [BSD-3](https://github.com/CLIUtils/CLI11/blob/master/LICENSE)
 
 ### Static Libraries
-* [cppcrypto](https://sourceforge.net/projects/cppcrypto) - small, fast, cross-platform BSD licensed C++ crypto library  
+* [cppcrypto](https://sourceforge.net/projects/cppcrypto) - small, fast, cross-platform C++ crypto library [License](https://github.com/pulmark/warpwallet-tool/blob/master/externals/crypto/doc/license.txt)  
 * [libbitcoin-tool](https://github.com/pulmark/bitcoin-tool) - generates cryptocurrency addresses and keys, [MIT](https://github.com/pulmark/bitcoin-tool/blob/master/lib/LICENSE.md)
 
 The distribution doesn't use any QT libraries or headers, only the build tool QT Creator.
@@ -196,25 +197,27 @@ The external headers (json, CLI) are already copied into include sub-directory.
 
 ### Build cppcrypto library
 
-* follow [instructions](http://cppcrypto.sourceforge.net/) and download, extract library into .external/crypto/ sub-directory
-* run make
+* follow [instructions](http://cppcrypto.sourceforge.net/) and download, extract library into ./externals/crypto/ sub-directory
+* run make (requires yaml)
 
 ### Build libbitcoin-tool library
 The library is derived from bitcoin-tool command line tool by adding a simple wrapper to use it as library
 
-* git clone [project](https://github.com/pulmark/bitcoin-tool) into .externals/bitcoin-tool/ sub-directory
-* build library using QT project file (lib_bitcointool.pro) included in its ./lib sub-directory
+* git clone [project](https://github.com/pulmark/bitcoin-tool) into ./externals/bitcoin-tool/
+* build library using QT project file (lib_bitcointool.pro) located in ./externals/bitcoin-tool/lib/
 
 ## Testing, Performance
 During development the validity of generated bitcoin addresses and keys has been verified by using the bitaddress.org wallet tool.
 
-Test cases for operations implemented has been created. Next step is to build test suite that 
+Simple test cases for operations implemented has been created. Next step is to build test suite that 
 verifies program output against these cases.
 
-When running attach operation against address my laptop (Intel dual-core i7-2620M, 3.19GHz) runs hot. Both cores are working. CPU usage is around 45-50%. The hash rate for the attach loop (generate new random password, generate WarpWallet key, generate coin address & keys) is around 1.3 - 1.4 H/s.
+When executing attach operation my laptop (Intel dual-core i7-2620M, 3.19GHz) runs hot, CPU usage 45-50%. 
+The hash rate for the attach loop (generate random password, generate WarpWallet key, generate coin address & keys) 
+is around 1.3 - 1.4 H/s.
 
-The performance of M-T engine used as PRNG varies, sometimes it seems to generate quite a lot of duplicates and then sometimes it works very efficiently.
-I have to investigate more PRNG algorithms, don't know of them, maybe the init seed is not optimal. 
+The performance of M-T engine PRNG varies. I have to investigate more PRNG algorithms, don't know of them. 
+I suspect that the engine's initialization seed is not optimal.
 
 ## Credits
 * Max Krohn and Chris Coyne, authors of WarpWallet algorithm,
