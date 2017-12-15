@@ -78,6 +78,38 @@ Mersenne-Twister engine (PRNG) is used for random passphrase generation.
 Tries to find private key and passphrase for given coin address.
 
 * Command params: **-n {network id} -c 3 -p {passphrase length} {salt} {coin address}**
+* Example Output:
+```
+{
+  "_time": "2017-12-15T12:07:46EET",
+  "_user": {
+    "command": "attach-address",
+    "network": 1,
+    "param": {
+      "address": "1MbZtq5vYiFBb9uWmM9t6nozCf1n4qb8yQ",
+      "passwordLenght": 2,
+      "salt": "let@me.out"
+    }
+  },
+  "attach": {
+    "performance": {
+      "combination": 3844,
+      "coverage": 129.39646201873,
+      "rate": 1.37783933518006,
+      "time": 3610.0,
+      "trial": 4974
+    },
+    "result": {
+      "password": "Dx",
+      "success": true
+    }
+  },
+  "key": {
+    "address": "1MbZtq5vYiFBb9uWmM9t6nozCf1n4qb8yQ",
+    "privateKeyWif": "5JD7KcrBdQZ3o8LZ6zxVTfrrURduwuoj2P9DiJr3dnjtRQpVKN6",
+  }
+}
+```
 
 ### 4. Generate Deterministic Wallet
 Generates a list of coin addresses, private keys using passphrase, salt, magic number. The magic number adds more 
@@ -133,8 +165,8 @@ Generates [BIP32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
 
 ## Portability
 
-The external [cppcrypto](https://sourceforge.net/projects/cppcrypto/files) library supports only x86 processors(32-bit or 64-bit).
-The development and testing has been done on laptop running Linux x86_64. No other desktop platforms has been tested.
+The external [cppcrypto](https://sourceforge.net/projects/cppcrypto/files) library supports only x86 processors (32-bit or 64-bit).
+The development and testing has been done on laptop running Debian based Linux x86_64. No other desktop platforms has been tested.
 
 The distribution source code is generic so it should be easy to build binaries for other platforms as well.
 The source code is implemented so that core logic and user interface is separated to allow integration of 
@@ -142,49 +174,47 @@ core functionality into other type of user interfaces.
 
 ## Dependencies
 The source code uses standard C++ libraries. The compiler must support C++14 standard or never.
-The external libbitcoin-tool library depends on OpenSSL development libraries and headers. OpenSSL version supported is 1.1.0g.      
+The external libbitcoin-tool library depends on openSSL development libraries and headers, openSSL version supported is 1.1.0g.      
 
-The package depends on the following externals:
+The distribution depends on the following externals:
 
 ### Header-only Libraries
 * [json.hpp](https://github.com/nlohmann/json) - json formatted output, [MIT](https://github.com/nlohmann/json/blob/master/LICENSE.MIT)
 * [CLI](https://github.com/CLIUtils/CLI11) - command-line parsing, [BSD-3](https://github.com/CLIUtils/CLI11/blob/master/LICENSE)
 
 ### Static Libraries
-* [cppcrypto](https://sourceforge.net/projects/cppcrypto/files) - small, fast, cross-platform BSD licensed C++ crypto library  
+* [cppcrypto](https://sourceforge.net/projects/cppcrypto) - small, fast, cross-platform BSD licensed C++ crypto library  
 * [libbitcoin-tool](https://github.com/pulmark/bitcoin-tool) - generates cryptocurrency addresses and keys, [MIT](https://github.com/pulmark/bitcoin-tool/blob/master/lib/LICENSE.md)
 
 The distribution doesn't use any QT libraries or headers, only the build tool QT Creator.
 
 ## Build
 The build is done by using QT Creator Community Edition, version 5.9.2. 
-The project file can be found at the project root: [warp-util.pro](https://github.com/pulmark/warpwallet-tool/blob/master/warp-util.pro). 
+The QT project file can be found at project root (warp-util.pro). 
 
-The external headers (JSON, CLI) are already copied into include sub-directory. 
-
-Fetching the sources for external libraries from repositories and build them for distribution is not yet supported.
-This must be done separately.
+The external headers (json, CLI) are already copied into include sub-directory.
 
 ### Build cppcrypto library
 
-* View [instructions](https://github.com/pulmark/warpwallet-tool/blob/master/externals/crypto/cppcrypto/doc/readme.html) for details where to get it and how-to build. 
-* The path into target library location is ./externals/crypto/cppcrypto.
+* follow [instructions](http://cppcrypto.sourceforge.net/) and download, extract library into .external/crypto/ sub-directory
+* run make
 
 ### Build libbitcoin-tool library
+The library is derived from bitcoin-tool command line tool by adding a simple wrapper to use it as library
 
-* Clone [project](https://github.com/pulmark/bitcoin-tool) into .externals/bitcoin-tool/ directory. 
-* The library is derived from bitcoin-tool command line tool by adding a simple wrapper to use it as library. 
-* For building use QT project file included in it's lib sub-directory.
+* git clone [project](https://github.com/pulmark/bitcoin-tool) into .externals/bitcoin-tool/ sub-directory
+* build library using QT project file (lib_bitcointool.pro) included in its ./lib sub-directory
 
-Currently distribution contains only one executable. Later the purpose is to build separate packages for core 
-functionality and user interface. Some tests has been done by using Google's Bazel for build. Bazel might 
-be the tool that is utilized later to build the distribution packages.
-
-## Testing
+## Testing, Performance
 During development the validity of generated bitcoin addresses and keys has been verified by using the bitaddress.org wallet tool.
 
 Test cases for operations implemented has been created. Next step is to build test suite that 
 verifies program output against these cases.
+
+When running attach operation against address my laptop (Intel dual-core i7-2620M, 3.19GHz) runs hot. Both cores are working. CPU usage is around 45-50%. The hash rate for the attach loop (generate new random password, generate WarpWallet key, generate coin address & keys) is around 1.3 - 1.4 H/s.
+
+The performance of M-T engine used as PRNG varies, sometimes it seems to generate quite a lot of duplicates and then sometimes it works very efficiently.
+I have to investigate more PRNG algorithms, don't know of them, maybe the init seed is not optimal. 
 
 ## Credits
 * Max Krohn and Chris Coyne, authors of WarpWallet algorithm,
