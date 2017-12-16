@@ -2,7 +2,7 @@
 ** Copyright (c) 2017 Markku Pulkkinen. All rights reserved.
 ** Contact: markku.j.pulkkinen@gmail.com
 **
-** This file is part of libwarputil software distribution.
+** This file is part of warpwallet-tool software distribution.
 **
 ** This software is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU Lesser General Public License as published by
@@ -58,7 +58,7 @@ class CoinKeyPair {
   CoinId network_;   /// network
   bool compressed_;  /// public key compressed/uncompressed
   ByteVect addr_;    /// address, base58check
-  ByteVect pub_;     /// public key, base58check
+  ByteVect pub_;     /// public key, hex
   ByteVect priv_;    /// private key, WIF, base58check
 
   bool isValid_;
