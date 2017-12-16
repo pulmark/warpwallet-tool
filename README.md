@@ -10,16 +10,12 @@ and keys for following cryptocurrency networks:
 
 ## Disclaimer
 
-The code is experimental so use tool with care. Check that generated addresses & private keys are valid before using them.
-
-Never use system that is connected to network for address & private key generation or to store private keys. Sign transactions in isolated, [air-gapped](https://www.techopedia.com/definition/17037/air-gap) system before sending transaction into network.
-
-Understand the risks of using [brain wallets](https://en.bitcoin.it/wiki/Brainwallet) and benefits of using [deterministic wallets](https://en.bitcoin.it/wiki/Deterministic_wallet).
+The code is experimental so use tool with care. Check that generated addresses & private keys are valid before using them. Understand the risks of using [brain wallets](https://en.bitcoin.it/wiki/Brainwallet) and benefits of using [deterministic wallets](https://en.bitcoin.it/wiki/Deterministic_wallet).
 
 ## Features
 The following operations are supported: 
 
-### 1. Generate Key
+#### 1. Generate Key
 Generates a coin address, private key using passphrase and salt.
 
 * Command params: **-n {network id} -c 1 -p {passphrase} {salt}**
@@ -40,7 +36,7 @@ Generates a coin address, private key using passphrase and salt.
 }
 ```
 
-### 2. Generate Keys Random
+#### 2. Generate Keys Random
 Generates a list of coin addresses, private keys using random passphrase generator and salt.
 Mersenne-Twister engine (PRNG) is used for random passphrase generation.
 
@@ -75,7 +71,7 @@ Mersenne-Twister engine (PRNG) is used for random passphrase generation.
 }
 ```
 
-### 3. Attach
+#### 3. Attach
 Tries to find private key and passphrase for coin address.
 
 * Command params: **-n {network id} -c 3 -p {passphrase length} {salt} {coin address}**
@@ -112,7 +108,7 @@ Tries to find private key and passphrase for coin address.
 }
 ```
 
-### 4. Generate Deterministic Wallet
+#### 4. Generate Deterministic Wallet
 Generates a list of coin addresses, private keys using passphrase, salt, magic number. The magic number adds more 
 randomness and security against attachers trying to find private keys for coin addresses. The number can be birth date, 
 shoe size, phone number, apartment number, street address number etc. that is easy to remember.
@@ -158,25 +154,21 @@ Coin Private Key = WarpKeyGenerator(Child Key, Salt)
 }
 ```
 
-### 5. Generate Hierarchical Deterministic Wallet (BIP-0032)
+#### 5. Generate Hierarchical Deterministic Wallet (BIP-0032)
 Generates [BIP32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki) wallet using passphrase, salt, external keys count, internal keys count.
 
 * Command params : **-n {network id} - c 5 - p {passphrase} {salt} {ext keys count} {int keys count} {watch only}**
 * Status: work in progress
 
 ## Portability
-
 The external [cppcrypto](https://sourceforge.net/projects/cppcrypto/files) library supports only x86 processors (32-bit or 64-bit).
 The development and testing has been done on laptop running Debian based Linux x86_64. No other desktop platforms has been tested.
 
-The distribution source code is generic so it should be easy to build binaries for other platforms as well.
-The source code is implemented so that core logic and user interface is separated to allow integration of 
-core functionality into other type of user interfaces.
+The source code uses standard C++ libraries. The compiler must support C++14 standard or never. The code is generic so it should 
+be easy to build binaries for other platforms as well. The core logic and user interface is separated to allow integration 
+of core functionality into other type of user interfaces.
 
 ## Dependencies
-The source code uses standard C++ libraries. The compiler must support C++14 standard or never.
-The external libbitcoin-tool library depends on openSSL development libraries and headers, openSSL version supported is 1.1.0g.      
-
 The distribution depends on the following externals:
 
 ### Header-only Libraries
@@ -187,12 +179,10 @@ The distribution depends on the following externals:
 * [cppcrypto](https://sourceforge.net/projects/cppcrypto) - small, fast, cross-platform C++ crypto library [License](https://github.com/pulmark/warpwallet-tool/blob/master/externals/crypto/doc/license.txt)  
 * [libbitcoin-tool](https://github.com/pulmark/bitcoin-tool) - generates cryptocurrency addresses and keys, [MIT](https://github.com/pulmark/bitcoin-tool/blob/master/lib/LICENSE.md)
 
-The distribution doesn't use any QT libraries or headers, only the build tool QT Creator.
+The external libbitcoin-tool library depends on openSSL development libraries and headers, openSSL version supported is 1.1.0g. The code doesn't use any QT libraries or headers, only the build tool QT Creator.
 
 ## Build
-The build is done by using QT Creator Community Edition, version 5.9.2. 
-The QT project file can be found at project root (warp-util.pro). 
-
+The build is done by using QT Creator Community Edition, version 5.9.2 and qmake. The QT project file can be found at project root (warp-util.pro). 
 The external headers (json, CLI) are already copied into include sub-directory.
 
 ### Build cppcrypto library
@@ -209,15 +199,10 @@ The library is derived from bitcoin-tool command line tool by adding a simple wr
 ## Testing, Performance
 During development the validity of generated bitcoin addresses and keys has been verified by using the bitaddress.org wallet tool.
 
-Simple test cases for operations implemented has been created. Next step is to build test suite that 
-verifies program output against these cases.
-
 When executing attach operation my laptop (Intel dual-core i7-2620M, 3.19GHz) runs hot, CPU usage 45-50%. 
-The hash rate for the attach loop (generate random password, generate WarpWallet key, generate coin address & keys) 
-is around 1.3 - 1.4 H/s.
-
-The performance of M-T engine PRNG varies. I have to investigate more PRNG algorithms, don't know of them. 
-I suspect that the engine's initialization seed is not optimal.
+The hash rate for the attach loop (generate random password, generate WarpWallet key, generate coin keys & address) 
+is around 1.3 - 1.4 H/s. The performance of M-T engine PRNG varies. I have to investigate more PRNG algorithms, 
+don't know of them. I suspect that the engine's initialization seed is not optimal.
 
 ## Credits
 * Max Krohn and Chris Coyne, authors of WarpWallet algorithm,
