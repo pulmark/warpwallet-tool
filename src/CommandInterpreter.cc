@@ -118,16 +118,15 @@ void CommandInterpreter::doAttach() {
     throw std::invalid_argument(
         "attach: invalid parameters <password length | salt | address>");
 
-  auto len = ui_.attach_.value().pwd_len_;
-  ByteVect pwd(len);
   CoinKeyPair coin(ui_.cid_);
   CoinKeyPair challenge(ui_.cid_, false, ui_.attach_.value().address_);
   WarpKeyGenerator key_gen;
   RandomSeedGenerator pwd_gen(SeedChar::kAll);
   pwd_gen.init();
+  ByteVect pwd(ui_.attach_.value().pwd_len_);
   SecretKey secret;
   bool isFound{false};
-  auto cnt(0);
+  uint64_t cnt(0);
   auto start = std::chrono::system_clock::now();
   // loop until coin address of challenge found
   do {
@@ -138,13 +137,12 @@ void CommandInterpreter::doAttach() {
     cnt++;
   } while (!isFound);
   auto stop = std::chrono::system_clock::now();
-  auto elapsed = stop - start;
-  auto msec = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed);
-  auto combination(pow(62, pwd.size()));
+  std::chrono::duration<double> sec = stop - start;
+  auto combination(pow(pwd_gen.maxChars(), pwd.size()));
   if (isFound) {
     initJSON();
     addJSON(ui_, ui_.attach_.value(), pwd);
-    addJSON("performance", combination, cnt, msec.count());
+    addJSON("performance", combination, cnt, sec.count());
     addJSON(coin);
     flushJSON();
   }
@@ -326,15 +324,16 @@ void CommandInterpreter::addJSON(const PassWordSaltKeyMap& coins) {
 }
 
 void CommandInterpreter::addJSON(const std::string& name, uint64_t combination,
-                                 uint64_t cnt, uint64_t ms) {
+                                 uint64_t cnt, double sec) {
   json stat;
-  double sec(ms / 1000);
   stat["combination"] = combination;
-  if (combination != 0)
+  if (combination > 0) {
     stat["coverage"] = double(cnt / double(combination)) * 100.0;
+  }
   stat["time"] = sec;
-  if (ms != 0) stat["rate"] = double(cnt / sec);
-  stat["trial"] = cnt;
-
+  if (sec > 0) {
+    stat["rate"] = double(cnt / sec);
+  }
+  stat["guess"] = cnt;
   out_["attach"][name] = stat;
 }

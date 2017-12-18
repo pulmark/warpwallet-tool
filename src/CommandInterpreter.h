@@ -78,7 +78,7 @@ class CommandInterpreter {
 
   void addJSON(const PassWordSaltKeyMap& coins);
   void addJSON(const std::string& name, uint64_t combination, uint64_t cnt,
-               uint64_t ms);
+               double sec);
 
   /// reference into user I/O parameters
   UserInterface& ui_;

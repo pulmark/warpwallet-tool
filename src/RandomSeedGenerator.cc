@@ -61,7 +61,8 @@ void RandomSeedGenerator::init() {
     std::seed_seq seq(std::begin(seed_data), std::end(seed_data));
   */
   // use randutils advanced seed generator for initialization
-  engine_ = std::make_unique<std::mt19937>(randutils::auto_seed_256{}.base());
+  randutils::auto_seed_256 seeder;
+  engine_ = std::make_unique<std::mt19937>(seeder);
 
   if (dict_ != SeedDictionary::kUndef) {
     /// \todo read allowed words from file

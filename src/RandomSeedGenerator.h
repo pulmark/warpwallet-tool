@@ -63,6 +63,13 @@ class RandomSeedGenerator {
   /// \brief generates passphrase containing given number of words.
   bool generatePassphrase(Passphrase& phrase, size_t cnt) const;
 
+  uint32_t maxChars() const {
+    return (charRange_.second - charRange_.first) + 1;
+  }
+  uint32_t maxWords() const {
+    return (wordRange_.second - wordRange_.first) + 1;
+  }
+
  private:
   /// random number engine based on Mersenne Twister algorithm
   std::unique_ptr<std::mt19937> engine_;
