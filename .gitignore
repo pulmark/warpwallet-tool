@@ -90,6 +90,8 @@ externals/fastpbkdf2/
 externals/libbtc/
 externals/mSIGNA/
 externals/scrypt/
+externals/openssl/
+externals/crypto/
 
 # local build, tmp, backup dirs
 build/
