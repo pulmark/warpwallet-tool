@@ -1,5 +1,5 @@
 #
-# QT project to build cppcrypto static library.
+# QT project to build cppcrypto static library using external Makefile
 #
 
 TEMPLATE = lib
@@ -7,30 +7,23 @@ QT -= qt
 QT -= core
 QT -= gui
 
-# dummy target (for some reason this is needed)
-TARGET = $$PWD/dummy
+# dummy's target
+TARGET = $$PWD/cppcrypto
 
-CONFIG += staticlib c++14 thread
+CONFIG += staticlib
 
-# QT magic: uses the original Makefile
-mytarget.target =
-mytarget.commands = make -C $$PWD/../externals/crypto/cppcrypto/
+# QT magic, step 1: build real target using phony
+mytarget.target = libcppcrypto.a
+mytarget.path = $$PWD/../externals/crypto/cppcrypto/libcppcrypto.a
+mytarget.commands = make -f phony
 mytarget.depends = dummy
+
+# QT magic, step 2: use 'dummy' as extra target for forwarding build reguest to 'mytarget'
 dummy.commands = @echo Building $$mytarget.target
 QMAKE_EXTRA_TARGETS += mytarget dummy
-PRE_TARGETDEPS += mytarget dummy
+PRE_TARGETDEPS += dummy
 
-# copies the library into build directory
-QMAKE_POST_LINK += cp $$PWD/../externals/crypto/cppcrypto/libcppcrypto.a $$OUT_PWD/
-
-# old brute force implementation
-#QMAKE_EXTRA_TARGETS += lib_cppcrypto
-#PRE_TARGETDEPS += lib_cppcrypto
-#
-# compile and copy static library file from externals sub-dir
-#lib_cppcrypto.commands = \
-#    rm -f $$OUT_PWD/libcppcrypto.a >/dev/null | \
-#    make -C $$PWD/../externals/crypto/cppcrypto/ -f Makefile >/dev/null | \
-#    cp $$PWD/../externals/crypto/cppcrypto/libcppcrypto.a $$OUT_PWD/libcppcrypto.a >/dev/null \
+# QT magic, step 3: copy the real library from sub-dir into build dir after linkage
+QMAKE_POST_LINK += cp $$mytarget.path $$OUT_PWD/
 
 message($$OUT_PWD)

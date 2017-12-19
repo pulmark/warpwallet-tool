@@ -1,0 +1,23 @@
+LIB_CPPCRYPTO = ../externals/crypto/cppcrypto/
+
+MY_TARGETS = $(LIB_CPPCRYPTO)
+
+.PHONY: $(LIB_CPPCRYPTO)
+$(LIB_CPPCRYPTO):
+	@echo "Building libcppcrypto using dir" $(LIB_CPPCRYPTO)
+	@$(MAKE) -C $@;
+
+.PHONY: all
+all: 
+	@echo "Build all using dir" $(LIB_CPPCRYPTO)
+	@$(MAKE) -C $(LIB_CPPCRYPTO) all
+
+.PHONY: clean
+clean:
+	@echo "Clean using dir" $(LIB_CPPCRYPTO)
+	@$(MAKE) -C $(LIB_CPPCRYPTO) clean;
+
+.PHONY: install
+install:
+	@echo "Installing target into dir" $(DESTDIR)
+	@$(MAKE) -C $(LIB_CPPCRYPTO) install;

@@ -93,7 +93,10 @@ externals/scrypt/
 externals/openssl/
 externals/crypto/
 
-# local build, tmp, backup dirs
+# local build, tmp, backup  dirs
 build/
+project/
+single/
+target/
 tmp/
 backup/
