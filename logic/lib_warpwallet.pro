@@ -15,7 +15,7 @@ QT -= gui
 
 TARGET = $$OUT_PWD/warpwallet
 
-CONFIG += staticlib c++14 thread
+CONFIG += staticlib c++14 thread create_prl
 
 SOURCES += \
     $$PWD/../src/CoinKeyPair.cc \

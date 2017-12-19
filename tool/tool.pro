@@ -12,7 +12,7 @@ QT -= qt
 QT -= gui
 QT -= core
 
-CONFIG += c++14 console thread
+CONFIG += c++14 console thread link_prl
 CONFIG -= app_bundle
 
 TARGET = $$OUT_PWD/warptool
