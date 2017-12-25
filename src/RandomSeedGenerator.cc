@@ -130,47 +130,60 @@ void RandomSeedGenerator::init() {
   if (fengine.good()) fengine >> *engine_;
   fengine.close();
 
-  // read password's distribution from file if exists
+  // init password's distribution
   if (chars_ != SeedChar::kUndef) {
     charDistribution_ =
         std::make_unique<std::uniform_int_distribution<unsigned int>>(
             charRange_.first, charRange_.second);
 
+    /*
     std::ifstream fdistribution(DIST_CHAR_FNAME, std::ifstream::in);
     if (fdistribution.good()) fdistribution >> *charDistribution_;
     fdistribution.close();
+    */
   }
 
-  // init dictionary and it's distribution utilized for passphrase generation
+  // init dictionary based passphrase distribution
   if (!dict_.empty()) {
     initDictionary();
-
     wordDistribution_ =
         std::make_unique<std::uniform_int_distribution<unsigned int>>(
             wordRange_.first, wordRange_.second);
 
+    /*
     std::ifstream fdistribution(DIST_WORD_FNAME, std::ifstream::in);
     if (fdistribution.good()) fdistribution >> *wordDistribution_;
     fdistribution.close();
+    */
   }
 }
 
 void RandomSeedGenerator::save() {
   std::ofstream ofs(PRNG_FNAME);
-  ofs << *engine_;
-  ofs.close();
-
-  if (chars_ != SeedChar::kUndef) {
-    std::ofstream ofs(DIST_CHAR_FNAME);
-    ofs << *charDistribution_;
+  if (ofs.is_open()) {
+    ofs << *engine_;
     ofs.close();
   }
 
-  if (!dict_.empty()) {
-    std::ofstream ofs(DIST_WORD_FNAME);
-    ofs << *wordDistribution_;
-    ofs.close();
-  }
+  /*
+    if (chars_ != SeedChar::kUndef) {
+      std::ofstream ofs(DIST_CHAR_FNAME);
+      if (ofs.is_open())
+      {
+          ofs << *charDistribution_;
+          ofs.close();
+      }
+    }
+
+    if (!dict_.empty()) {
+      std::ofstream ofs(DIST_WORD_FNAME);
+      if (ofs.is_open())
+      {
+          ofs << *wordDistribution_;
+          ofs.close();
+      }
+    }
+  */
 }
 
 bool RandomSeedGenerator::generatePassword(Password& pwd, size_t len,
