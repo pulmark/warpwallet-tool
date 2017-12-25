@@ -47,7 +47,8 @@ enum CommandEnum : std::uint32_t {
   AttachAddress = 3,
   GenerateWalletSD = 4,
   GenerateWalletBIP32 = 5,
-  Test = 6
+  GenerateCustomPassword = 6,
+  Test = 7
 };
 }
 
@@ -55,6 +56,7 @@ UserInterface::UserInterface(std::ostream& out)
     : arguments_(0),
       cid_(DEFAULT_COIN),
       oper_(OPER_DEFAULT),
+      dict_(""),
       pwd_(DEFAULT_PWD),
       salt_(DEFAULT_SALT),
       out_(out) {}
@@ -89,14 +91,15 @@ bool UserInterface::parse(int argc, char** argv) {
       "\t{BitCoin = 1,\n"
       "\t BitCoinTest = 2,\n"
       "\t LiteCoin = 3,\n"
-      "\t LiteCoinTest = 4} ");
-  opt_coin->set_default_val(" 1");
+      "\t LiteCoinTest = 4}");
+  opt_coin->set_default_val("1");
 
   // init command option
   CommandEnum cmd;
   CLI::Option* opt_cmd = app.add_set(
-      "-c,--command", cmd, {GenerateKeys, GenerateKeysRandom, AttachAddress,
-                            GenerateWalletSD, GenerateWalletBIP32, Test});
+      "-c,--command", cmd,
+      {GenerateKeys, GenerateKeysRandom, AttachAddress, GenerateWalletSD,
+       GenerateWalletBIP32, GenerateCustomPassword, Test});
   opt_cmd->set_type_name(
       " enum/command in\n"
       "\t{GenerateKeys = 1,\n"
@@ -104,8 +107,18 @@ bool UserInterface::parse(int argc, char** argv) {
       "\t Attach = 3,\n"
       "\t GenerateWalletSD = 4,\n"
       "\t GenerateWalletBIP32 = 5,\n"
-      "\t Test = 6} ");
+      "\t GenerateCustomPassword = 6,\n"
+      "\t Test = 7}");
   opt_cmd->set_default_val("1");
+
+  // init dictionary language option
+  std::string dict("");
+  CLI::Option* opt_dict = app.add_option("-l,--language", dict);
+  opt_dict->set_type_name(
+      "dictionary file name or country code "
+      "{en,es,it,fr,jp,kr,fi,cn-t,cn-s,xx} "
+      "for passphrase generation");
+  opt_dict->set_default_val("en");
 
   // init command parameters option
   std::vector<std::string> params{"password", "let@me.in"};
@@ -118,8 +131,9 @@ bool UserInterface::parse(int argc, char** argv) {
       "\t4 = {password salt magic-number key-count is-watch-only}\n"
       "\t5 = {password salt external-key-count internal-key-count "
       "is-watch-only}\n"
-      "\t6 = {test-number test-vector-file-name} ");
-  opt_params->set_default_val(" 'Make Warp Great Again' let@me.in");
+      "\t6 = {password-length password-count custom-charset password-mask}\n"
+      "\t7 = {test-number test-vector-file-name}");
+  opt_params->set_default_val("'Make Warp Great Again' let@me.in");
 
   // run parser
   try {
@@ -130,6 +144,7 @@ bool UserInterface::parse(int argc, char** argv) {
 
   bool has_network(opt_coin->count() > 0);
   bool has_command(opt_cmd->count() > 0);
+  bool has_dict(opt_dict->count() > 0);
   bool has_params(opt_params->count() > 0);
 
   // process parser results
@@ -155,6 +170,9 @@ bool UserInterface::parse(int argc, char** argv) {
       break;
     }
 
+    // init possible dictionary
+    if (has_dict) dict_ = dict;
+
     // process command
     if (cmd == GenerateKeys)
       oper_ = OPER_GENERATE_COIN;
@@ -168,6 +186,8 @@ bool UserInterface::parse(int argc, char** argv) {
       oper_ = OPER__GENERATE_WALLET_HD;
     else if (cmd == Test)
       oper_ = OPER_TEST;
+    else if (cmd == GenerateCustomPassword)
+      oper_ = OPER__GENERATE_CUSTOM_PWD;
     else {
       // unknown command ->  exit
       oper_ = OPER_UNDEF;
@@ -180,7 +200,8 @@ bool UserInterface::parse(int argc, char** argv) {
     AttachAddress = 3,
     GenerateWalletSD = 4,
     GenerateWalletBIP32 = 5,
-    Test = 6
+    GenerateCustomPassword = 6,
+    Test = 7
     */
     switch (cmd) {
       default:
@@ -304,6 +325,39 @@ bool UserInterface::parse(int argc, char** argv) {
           std::stringstream ss;
           ss << oper_ << " invalid parameter set {password salt ext-keys "
                          "int-keys is-watch-only}";
+          throw std::invalid_argument(ss.str());
+        }
+        break;
+      case GenerateCustomPassword:
+        // {password-length password-count custom-charset password-mask}
+        if (!has_params) {
+          std::stringstream ss;
+          ss << oper_ << " parameters {password-length password-count "
+                         "custom-charset password-mask} missing";
+          throw std::invalid_argument(ss.str());
+        }
+        try {
+          pwd_.clear();
+          UserInterface::CustomPassword temp;
+          temp.len_ = std::stoi(params.at(0));
+          temp.cnt_ = std::stoull(params.at(1));
+          temp.charset_.clear();
+          if (params.size() > 2 && params.at(2).size() > 0) {
+            temp.charset_.resize(params.at(2).size());
+            std::copy(params.at(2).begin(), params.at(2).end(),
+                      temp.charset_.begin());
+          }
+          temp.mask_.clear();
+          if (params.size() > 3 && params.at(3).size() > 0) {
+            temp.mask_.resize(params.at(3).size());
+            std::copy(params.at(3).begin(), params.at(3).end(),
+                      temp.mask_.begin());
+          }
+          custom_pwd_ = temp;
+        } catch (std::exception& e) {
+          std::stringstream ss;
+          ss << oper_ << " invalid parameter set {password-length "
+                         "password-count custom-charset password-mask}";
           throw std::invalid_argument(ss.str());
         }
         break;

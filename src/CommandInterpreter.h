@@ -62,6 +62,8 @@ class CommandInterpreter {
   void doGenerateCoinRandom();
   void doGenerateWalletDTS();
   void doGenerateWalletHD();
+  void doGenerateCustomPassword();
+
   void doTest();
 
   void initJSON();

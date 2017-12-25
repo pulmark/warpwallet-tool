@@ -88,9 +88,12 @@ void CoinKeyPair::create(const uint8_t* secret, unsigned int secret_len) {
   //  if (!tool.getValue("public-key.base58check:", pub_))
   //    throw std::domain_error("CoinKeyPair::invalid public key");
 
-  if (!tool.getValue("public-key.hex:", pub_))
+  if (!tool.getValue("private-key-wif.base58check:", priv_))
+    throw std::domain_error("CoinKeyPair::invalid private key");
+
+  if (!tool.getValue("public-key.hex:", pubHex_))
     throw std::domain_error("CoinKeyPair::invalid public key");
 
-  if (!tool.getValue("private-key-wif.base58check:", priv_))
+  if (!tool.getValue("private-key.hex:", privHex_))
     throw std::domain_error("CoinKeyPair::invalid private key");
 }

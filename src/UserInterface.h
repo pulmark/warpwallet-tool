@@ -45,6 +45,10 @@ const std::string OPER__GENERATE_WALLET_DTS(
 const std::string OPER__GENERATE_WALLET_HD(
     "generate-wallet-deterministic-bib32");
 
+/// generate-password-custom <password length> <custom charset> <password count>
+/// <password mask>
+const std::string OPER__GENERATE_CUSTOM_PWD("generate-password-custom");
+
 /// test -p <test identifier> <test vector file name>
 const std::string OPER_TEST("test");
 
@@ -76,6 +80,9 @@ class UserInterface {
   /// operation code
   std::string oper_;
 
+  /// dictionary file or language for random passphrase generation
+  std::string dict_;
+
   /// password
   Password pwd_;
 
@@ -85,7 +92,7 @@ class UserInterface {
   /// random key generation parameters
   struct Random {
     operator bool() const {
-      return (pwd_len_ >= 2 && pwd_len_ < 65535 && keys_ >= 1 && keys_ < 1000);
+      return (pwd_len_ >= 2 && pwd_len_ <= 255 && keys_ >= 1 && keys_ < 1000);
     }
     uint16_t pwd_len_;
     unsigned int keys_;
@@ -95,7 +102,8 @@ class UserInterface {
   /// attach parameters
   struct Attach {
     operator bool() const {
-      return (pwd_len_ >= 2 && pwd_len_ < 65535 && address_.size() != 0);
+      return (pwd_len_ >= 2 && pwd_len_ <= 255 && address_.size() <= 34 &&
+              address_.size() >= 26);
     }
     uint16_t pwd_len_;
     ByteVect address_;
@@ -123,6 +131,19 @@ class UserInterface {
     unsigned int internal_keys_;
   };
   std::experimental::optional<WalletHD> hd_wallet;
+
+  /// custom password generation parameters
+  struct CustomPassword {
+    operator bool() const {
+      return (len_ >= 2 && len_ <= 255 && cnt_ > 0 &&
+              (mask_.size() > 0 ? len_ == mask_.size() : true));
+    }
+    unsigned int len_;
+    unsigned long long cnt_;
+    Password charset_;
+    Password mask_;
+  };
+  std::experimental::optional<CustomPassword> custom_pwd_;
 
   /// file name containing test vectors
   std::experimental::optional<std::string> fnTest_;

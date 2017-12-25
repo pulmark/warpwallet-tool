@@ -29,21 +29,27 @@
 #include <memory>
 #include <random>
 
+enum class RuleId {
+  kUndef = 0,
+  kAsciiSumEqual,
+  kInternalStructureEqual,
+};
+
 enum class SeedChar {
   kUndef = 0,
   kAll,
   kDigit,
   kLetter,
   kSmallLetter,
-  kCapitalLetter
+  kCapitalLetter,
+  kCustom
 };
 
-enum class SeedDictionary { kUndef = 0, kFinnish, kEnglish };
-
+using SeedDictionary = std::string;
 using Password = std::vector<uint8_t>;
 using Passphrase = std::vector<Password>;
 using RangeMinMax = std::pair<uint32_t, uint32_t>;
-using Dictionary = std::map<uint32_t, std::vector<uint8_t> >;
+using Dictionary = std::vector<Password>;
 
 /// \class RandomSeedGenerator
 /// \brief Generates random seed containing random chars or words.
@@ -51,35 +57,67 @@ using Dictionary = std::map<uint32_t, std::vector<uint8_t> >;
 class RandomSeedGenerator {
  public:
   RandomSeedGenerator(SeedChar chars = SeedChar::kAll);
-  RandomSeedGenerator(SeedDictionary dict = SeedDictionary::kFinnish);
+  RandomSeedGenerator(const SeedDictionary& dict);
+  RandomSeedGenerator(const Password& custom);
 
   virtual ~RandomSeedGenerator() {}
 
+  /// \brief initializes PRNG, distribution, charset and possible dictionary
   void init();
 
+  /// \brief saves state of PRNG, distribution into file
+  void save();
+
   /// \brief generates password of given length.
-  bool generatePassword(Password& pass, size_t len) const;
+  bool generatePassword(Password& pass, size_t len,
+                        const Password& mask = Password(0)) const;
 
   /// \brief generates passphrase containing given number of words.
-  bool generatePassphrase(Passphrase& phrase, size_t cnt) const;
+  bool generatePassphrase(Passphrase& phrase, size_t cnt,
+                          const uint8_t& delim = ' ') const;
 
-  uint32_t maxChars() const {
-    return (charRange_.second - charRange_.first) + 1;
-  }
-  uint32_t maxWords() const {
-    return (wordRange_.second - wordRange_.first) + 1;
-  }
+  /// \brief returns number of possible combinations for given length
+  long double combinations(uint32_t length) const;
+
+  /// \brief checks if given dictionary language is supported
+  static bool isSupportedLanguage(const std::string& code);
 
  private:
-  /// random number engine based on Mersenne Twister algorithm
+  void initDictionary();
+
+  /// PRNG engine based on Mersenne Twister algorithm
   std::unique_ptr<std::mt19937> engine_;
 
+  /// character set identifier
   SeedChar chars_;
+
+  /// character range of charset
   RangeMinMax charRange_;
 
+  /// custom character set
+  std::vector<unsigned char> custom_;
+
+  /// distribution utilized by PRNG
+  std::unique_ptr<std::uniform_int_distribution<unsigned int> >
+      charDistribution_;
+
+  /// dictionary identifier, filename
   SeedDictionary dict_;
+
+  /// word range
   RangeMinMax wordRange_;
+
+  /// collection of words
   Dictionary words_;
+
+  /// distribution utilized by PRNG
+  std::unique_ptr<std::uniform_int_distribution<unsigned int> >
+      wordDistribution_;
+
+  /// constant fnames to save PRNG & distribution states
+  static constexpr const char* PRNG_FNAME = "prng.dat";
+  static constexpr const char* DIST_CHAR_FNAME = "dist_char.dat";
+  static constexpr const char* DIST_WORD_FNAME = "dist_word.dat";
 };
 
 #endif  // RANDOMSEEDGENERATOR_H

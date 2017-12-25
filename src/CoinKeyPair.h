@@ -38,8 +38,9 @@ class CoinKeyPair {
       : network_(id),
         compressed_(compressed),
         addr_(addr),
-        pub_(pub),
-        priv_(priv) {}
+        priv_(priv),
+        pubHex_(pub),
+        privHex_{'\0'} {}
 
   /// \brief Compares keypair to other key pair.
   bool equals(CoinKeyPair& rhs) const {
@@ -51,15 +52,17 @@ class CoinKeyPair {
 
   CoinId id() const { return network_; }
   ByteVect address() const { return addr_; }
-  ByteVect publicKey() const { return pub_; }
   ByteVect privateKey() const { return priv_; }
+  ByteVect publicKeyHex() const { return pubHex_; }
+  ByteVect privateKeyHex() const { return privHex_; }
 
  private:
-  CoinId network_;   /// network
-  bool compressed_;  /// public key compressed/uncompressed
-  ByteVect addr_;    /// address, base58check
-  ByteVect pub_;     /// public key, hex
-  ByteVect priv_;    /// private key, WIF, base58check
+  CoinId network_;    /// network
+  bool compressed_;   /// public key compressed/uncompressed
+  ByteVect addr_;     /// address, base58check
+  ByteVect priv_;     /// private key, WIF, base58check
+  ByteVect pubHex_;   /// public key, hex
+  ByteVect privHex_;  /// priv key, hex
 
   bool isValid_;
 };

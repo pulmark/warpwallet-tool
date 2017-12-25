@@ -22,6 +22,7 @@
 #include <ctime>
 #include <iomanip>
 #include <iostream>
+#include <unordered_set>
 
 #include "CoinKeyPair.h"
 #include "CommandInterpreter.h"
@@ -39,6 +40,19 @@ std::string ByteVect2String(const ByteVect& v) {
   }
   return ss.str();
 }
+
+void Passphrase2Password(const Passphrase& phr, Password& pwd) {
+  std::stringstream oss;
+  for (const auto& i : phr) {
+    for (const auto& j : i) {
+      oss << j;
+    }
+  }
+  const std::string s{oss.str()};
+  pwd.clear();
+  pwd.reserve(s.length());
+  pwd.insert(pwd.begin(), s.begin(), s.end());
+}
 }
 
 void CommandInterpreter::execute() {
@@ -52,6 +66,8 @@ void CommandInterpreter::execute() {
     doGenerateWalletDTS();
   } else if (ui_.oper_.compare(OPER__GENERATE_WALLET_HD) == 0) {
     doGenerateWalletHD();
+  } else if (ui_.oper_.compare(OPER__GENERATE_CUSTOM_PWD) == 0) {
+    doGenerateCustomPassword();
   } else if (ui_.oper_.compare(OPER_TEST) == 0) {
     doTest();
   } else if (ui_.oper_.compare(OPER_DEFAULT) == 0) {
@@ -87,17 +103,36 @@ void CommandInterpreter::doGenerateCoin() {
 void CommandInterpreter::doGenerateCoinRandom() {
   if (!ui_.random_ || !ui_.random_.value())
     throw std::invalid_argument(
-        "generate-coin-random: invalid command parameters <password length | "
+        "generate-coin-random: invalid command parameters <passphrase length | "
         "salt | keys count>");
 
-  RandomSeedGenerator pwd_gen(SeedChar::kAll);
-  pwd_gen.init();
+  // check if dictionary
+  std::string lang(ui_.dict_);
+  bool isDictionary{false};
+  if (!lang.empty())
+    isDictionary = RandomSeedGenerator::isSupportedLanguage(lang);
+
+  std::unique_ptr<RandomSeedGenerator> gen(nullptr);
+  if (isDictionary)
+    gen = std::unique_ptr<RandomSeedGenerator>(new RandomSeedGenerator(lang));
+  else
+    gen = std::unique_ptr<RandomSeedGenerator>(
+        new RandomSeedGenerator(SeedChar::kAll));
+
+  gen->init();
   auto cnt = ui_.random_.value().keys_;
   auto pwd_len = ui_.random_.value().pwd_len_;
   std::map<std::pair<Password, Password>, CoinKeyPair> coins;
   while (cnt > 0) {
     Password pwd(pwd_len);
-    pwd_gen.generatePassword(pwd, pwd.size());
+    if (!isDictionary)
+      gen->generatePassword(pwd, pwd.size());
+    else {
+      Passphrase phr(pwd_len);
+      gen->generatePassphrase(phr, phr.size());
+      Passphrase2Password(phr, pwd);
+    }
+
     WarpKeyGenerator key_gen;
     SecretKey priv;
     key_gen.generate(pwd, ui_.salt_, priv);
@@ -107,6 +142,7 @@ void CommandInterpreter::doGenerateCoinRandom() {
     auto ret = coins.emplace(std::make_pair(pair, coin));
     if (ret.second) --cnt;
   }
+  gen->save();
   initJSON();
   addJSON(ui_);
   addJSON(coins);
@@ -116,29 +152,70 @@ void CommandInterpreter::doGenerateCoinRandom() {
 void CommandInterpreter::doAttach() {
   if (!ui_.attach_ || !ui_.attach_.value())
     throw std::invalid_argument(
-        "attach: invalid parameters <password length | salt | address>");
+        "attach: invalid parameters <passphrase length | salt | address>");
 
+  // check if dictionary
+  std::string lang(ui_.dict_);
+  bool isDictionary{false};
+  if (!lang.empty())
+    isDictionary = RandomSeedGenerator::isSupportedLanguage(lang);
+
+  // select and init generator
+  std::unique_ptr<RandomSeedGenerator> gen(nullptr);
+  if (isDictionary)
+    gen = std::unique_ptr<RandomSeedGenerator>(new RandomSeedGenerator(lang));
+  else
+    gen = std::unique_ptr<RandomSeedGenerator>(
+        new RandomSeedGenerator(SeedChar::kAll));
+  gen->init();
+
+  // init coin, challenge
   CoinKeyPair coin(ui_.cid_);
   CoinKeyPair challenge(ui_.cid_, false, ui_.attach_.value().address_);
-  WarpKeyGenerator key_gen;
-  RandomSeedGenerator pwd_gen(SeedChar::kAll);
-  pwd_gen.init();
-  ByteVect pwd(ui_.attach_.value().pwd_len_);
-  SecretKey secret;
-  bool isFound{false};
+  auto pwd_len(ui_.attach_.value().pwd_len_);
+
+  // init chrono for stats
   uint64_t cnt(0);
   auto start = std::chrono::system_clock::now();
+
+  // init password, secret, combinations
+  Password pwd(pwd_len);
+  SecretKey secret;
+  auto combination(gen->combinations(pwd_len));
+
+  WarpKeyGenerator key_gen;
+  bool isFound{false};
   // loop until coin address of challenge found
   do {
-    pwd_gen.generatePassword(pwd, pwd.size());
+    if (!isDictionary)
+      gen->generatePassword(pwd, pwd.size());
+    else {
+      Passphrase phr(pwd_len);
+      gen->generatePassphrase(phr, phr.size());
+      Passphrase2Password(phr, pwd);
+    }
     key_gen.generate(pwd, ui_.salt_, secret);
     coin.create(secret.data(), secret.size());
     isFound = coin.equals(challenge);
     cnt++;
+#if defined(DEBUG)
+    if (cnt % 30 == 0) {
+      // display some stats to user
+      auto lap = std::chrono::system_clock::now();
+      std::chrono::duration<double> elapsed = lap - start;
+      double rate = (elapsed.count() == 0 ? 0 : cnt / elapsed.count());
+      std::stringstream ss;
+      ss << std::setprecision(2) << std::fixed << "  Rate: " << rate << " g/s"
+         << "\tProgress: " << cnt << "/" << std::setprecision(0)
+         << std::round(combination) << "\tElapsed: " << std::setprecision(2)
+         << elapsed.count() << " s";
+      std::cerr << "\033[0G\033[2K" << ss.str() << "\033[0G" << std::flush;
+    }
+#endif
   } while (!isFound);
+  gen->save();
   auto stop = std::chrono::system_clock::now();
   std::chrono::duration<double> sec = stop - start;
-  auto combination(pow(pwd_gen.maxChars(), pwd.size()));
   if (isFound) {
     initJSON();
     addJSON(ui_, ui_.attach_.value(), pwd);
@@ -151,9 +228,11 @@ void CommandInterpreter::doAttach() {
 void CommandInterpreter::doGenerateWalletDTS() {
   if (!ui_.dts_wallet_ || !ui_.dts_wallet_.value())
     throw std::invalid_argument(
-        "generate-wallet-deterministic-simple: invalid parameters <password  | "
+        "generate-wallet-deterministic-simple: invalid parameters <password  "
+        "| "
         "salt | magic-number "
         "| key-count | is-watch-only>");
+
   // generate root key
   WarpKeyGenerator key_gen;
   SecretKey root;
@@ -221,6 +300,79 @@ void CommandInterpreter::doGenerateWalletHD() {
   */
 }
 
+void CommandInterpreter::doGenerateCustomPassword() {
+  ByteVect custom(ui_.custom_pwd_.value().charset_);
+  Password mask(ui_.custom_pwd_.value().mask_);
+  unsigned int length(ui_.custom_pwd_.value().len_);
+  unsigned long long count(ui_.custom_pwd_.value().cnt_);
+  bool isCustom{!custom.empty()};
+  bool isDictionary{false};
+
+  // check if dictionary
+  std::string lang(ui_.dict_);
+  if (!lang.empty())
+    isDictionary = RandomSeedGenerator::isSupportedLanguage(lang);
+  if (isDictionary) isCustom = false;
+
+  // init generator (default charset, custom charset or language)
+  std::unique_ptr<RandomSeedGenerator> gen(nullptr);
+  if (isDictionary)
+    gen = std::unique_ptr<RandomSeedGenerator>(new RandomSeedGenerator(lang));
+  else if (isCustom)
+    gen = std::unique_ptr<RandomSeedGenerator>(new RandomSeedGenerator(custom));
+  else
+    gen = std::unique_ptr<RandomSeedGenerator>(new RandomSeedGenerator());
+
+  gen->init();
+
+  auto combinations(gen->combinations(length));
+  std::unordered_set<std::string> pwds;
+  std::unordered_set<std::string> phrs;
+  unsigned long long cnt(count > 0 ? count : combinations);
+  unsigned long long i(0);
+  do {
+    if (!isDictionary) {
+      Password pwd(length);
+      if (!gen->generatePassword(pwd, pwd.size(), mask)) continue;
+      std::string temp{pwd.begin(), pwd.end()};
+      if (!pwds.insert(temp).second) continue;
+      i++;
+    } else {
+      Passphrase phrase(length);
+      if (!gen->generatePassphrase(phrase, phrase.size())) continue;
+      std::ostringstream temp;
+      for (const auto& i : phrase) {
+        const std::string ss{i.begin(), i.end()};
+        temp << ss;
+      }
+      if (!phrs.insert(temp.str()).second) continue;
+      i++;
+    }
+  } while (i < cnt);
+
+  // stream passwords/passphrases directly to cerr
+  for (const auto& i : pwds) {
+    std::cerr << i << std::endl;
+  }
+  for (const auto& i : phrs) {
+    for (const auto& j : i) {
+      std::cerr << j;
+    }
+    std::cerr << std::endl;
+  }
+
+#if defined(DEBUG)
+  // print stats
+  unsigned long long sum = (isDictionary ? phrs.size() : pwds.size());
+  std::cerr << std::setprecision(0) << std::fixed
+            << "count/combinations: " << sum << "/" << combinations
+            << std::endl;
+#endif
+
+  // save status
+  gen->save();
+}
+
 void CommandInterpreter::doTest() {
   throw std::domain_error(
       "verification-against-test-vectors command not implemented");
@@ -281,10 +433,13 @@ void CommandInterpreter::addJSON(const UserInterface& ui,
 
 void CommandInterpreter::addJSON(const CoinKeyPair& coin) {
   out_["key"]["address"] = ByteVect2String(coin.address());
-  std::string s = ByteVect2String(coin.publicKey());
+  std::string s = ByteVect2String(coin.publicKeyHex());
   for (auto& c : s) c = toupper(c);
   out_["key"]["publicKeyHex"] = s;
   out_["key"]["privateKeyWif"] = ByteVect2String(coin.privateKey());
+  s = ByteVect2String(coin.privateKeyHex());
+  for (auto& c : s) c = toupper(c);
+  out_["key"]["privateKeyHex"] = s;
 }
 
 void CommandInterpreter::addJSON(const KeyVect& coins,
@@ -296,12 +451,15 @@ void CommandInterpreter::addJSON(const KeyVect& coins,
       o["key"]["address"] = ByteVect2String(i.address());
     }
     if (options.test(OptionsOutputEnum::kKeysPublicKey)) {
-      std::string s = ByteVect2String(i.publicKey());
+      std::string s = ByteVect2String(i.publicKeyHex());
       for (auto& c : s) c = toupper(c);
       o["key"]["publicKeyHex"] = s;
     }
     if (options.test(OptionsOutputEnum::kKeysPrivKey)) {
       o["key"]["privateKeyWif"] = ByteVect2String(i.privateKey());
+      std::string s = ByteVect2String(i.privateKeyHex());
+      for (auto& c : s) c = toupper(c);
+      o["key"]["privateKeyHex"] = s;
     }
     j_coins.push_back(o);
   }
@@ -315,9 +473,12 @@ void CommandInterpreter::addJSON(const PassWordSaltKeyMap& coins) {
     o["_password"] = ByteVect2String(i.first.first);
     o["key"]["address"] = ByteVect2String(i.second.address());
     o["key"]["privateKeyWif"] = ByteVect2String(i.second.privateKey());
-    std::string s = ByteVect2String(i.second.publicKey());
+    std::string s = ByteVect2String(i.second.publicKeyHex());
     for (auto& c : s) c = toupper(c);
     o["key"]["publicKeyHex"] = s;
+    s = ByteVect2String(i.second.privateKeyHex());
+    for (auto& c : s) c = toupper(c);
+    o["key"]["privateKeyHex"] = s;
     j_coins.push_back(o);
   }
   out_["keys"] = j_coins;
