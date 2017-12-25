@@ -10,7 +10,7 @@ and keys for following cryptocurrency networks:
 
 The tool can generate random keys, addresses if required by using random chars(alphabets) or passphrase from 
 dictionary file. The tool supports passphrase generation for languages defined in [BIP-0039](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki) 
-proposal and a proprietary wordset for finnish language.
+proposal and a proprietary wordset for [finnish](https://github.com/pulmark/warpwallet-tool/blob/development/dict/finnish.txt) language.
 
 ## Disclaimer
 
@@ -171,19 +171,19 @@ Generates [BIP32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
 Just generates random passwords or passphrases.
 
 * Command params : **-n {network id} -l {language code} - c 6 - p {passphrase length} {passphrase count} {custom charset} {mask}**
-* Example Output:
+* Example Output (./warptool -n 1 -c 6 -l fi -p 8 10):
 ```
 {
-    harsh inject rural dentist glow need eyebrow reason
-    ankle faint spend pulp olive broom warm stick
-    elbow street rely fever shrug month cross they
-    mad climb describe hour card basic enemy dizzy
-    good fork pencil radio armed curtain question depth
-    garage various business adapt real satisfy grid tag
-    leg seven pizza chair woman dynamic chunk lumber
-    script rice divide rent teach nerve music exact
-    kid sheriff hat alien expand gain wheel wide
-    romance argue lawn fresh person zebra ready able
+lujilla rassu vanavesi otelauta vasiten joten tyvisolu seitikki
+pessaari futis tilakoko oikkuilu lompsa armias ovaali ulompaa
+putkilo kajahtaa leimaaja orastus junkkari yrttitee faneeri veistely
+runnoa pahimmin roottori sionismi aiennus heteka tukevuus mutteri
+hirnunta seesami jaettava tonne koukkuun stidi ottelu rehukala
+punkku passeli jutella plusnapa taamma verhoomo sirpakka arkiolot
+vingunta lesemuro horjuva pasteija adressi ketkale tyhmyri virkatie
+armeija vihamies spurgu punahome naljailu hieho onginta uraputki
+norjeta ummessa muljaus jukolaut nupula pidot alhaalla hakija
+vienosti aromikas finni puudute istua tiistai ilkimys nihti	
 }
 ```
 
